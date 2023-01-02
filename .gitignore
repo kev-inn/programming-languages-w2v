@@ -1,1 +1,8 @@
 snippets-dev/**
+src/parsers/**
+grammars/**.cpp
+grammars/**.h
+grammars/**.tokens
+grammars/.antlr/**
+**.pyc
+**.zip

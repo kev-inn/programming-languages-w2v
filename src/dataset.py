@@ -11,8 +11,8 @@ def _generic_regex():
     dot_operator = r"\."
     # parantheses and other similar constructs
     parantheses_like = r"[<>/\\{}[\]()'\"]"
-    # almost \W, but with some whitespaces. Captures rest of characters, but non-greedy!
-    non_words = r"\B[^a-zA-Z0-9_ ]+?\B"
+    # almost \W, but with some whitespaces. Captures rest of characters.
+    non_words = r"[^a-zA-Z0-9_ \t\n\.<>/\\{}[\]()'\"]+"
     return rf"({vars_or_keywords}|{dot_operator}|{parantheses_like}|{non_words})"
 
 
@@ -38,10 +38,9 @@ def tokenize_dataset(dataset: pd.DataFrame):
     dataset["code"] = (
         dataset["code"]
         .str.lower()
-        .str.replace(r"'.+?'", " STRING_LITERAL ", regex=True)
-        .str.replace(r'".+?"', " STRING_LITERAL ", regex=True)
+        .str.replace(r"'(\\.|[^'\\])*'", " STRING_LITERAL ", regex=True)
+        .str.replace(r'"(\\.|[^"\\])*"', " STRING_LITERAL ", regex=True)
         .str.replace(r"0x(\d|\w)+", " HEXNUMBER ", regex=True)
-        .str.replace(r"\\x(\d|\w)+", " HEXNUMBER ", regex=True)
         .str.replace(r"\d+", " NUMBER ", regex=True)
         .str.findall(GENERIC_REGEX)
     )
