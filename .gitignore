@@ -1,8 +1,9 @@
 snippets-dev/**
-src/parsers/**
 grammars/**.cpp
 grammars/**.h
 grammars/**.tokens
 grammars/.antlr/**
 **.pyc
 **.zip
+env/**
+src/java_parser/build/**
