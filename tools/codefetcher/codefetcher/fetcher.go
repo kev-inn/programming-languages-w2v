@@ -20,6 +20,7 @@ const MaxRequestsParallel = 1
 
 var (
 	ErrorCodeSizeLimitExceeded = errors.New("code size limit exceeded")
+	ErrorInvalidQuery          = errors.New("invalid query")
 )
 
 type GithubFetcher struct {
@@ -92,6 +93,10 @@ func secondsToTime(seconds string) string {
 }
 
 func (f GithubFetcher) FetchCodes(ctx context.Context, language Language, query string, maxTotalSizeBytes int) error {
+
+	if len(query) == 0 {
+		return ErrorInvalidQuery
+	}
 
 	opt := &github.SearchOptions{
 		ListOptions: github.ListOptions{PerPage: 30},
