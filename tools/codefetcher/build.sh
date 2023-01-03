@@ -21,7 +21,7 @@ for dist in ${DISTS[@]}; do
     output_file+=".exe"
   fi
 
-  echo -n "Building $(basename output_file)... "
+  echo -n "Building $(basename $output_file)... "
   env GOOS=${os} GOARCH=${arch} CGO_ENABLED=0 go build -o ${output_file} cmd/codefetcher/main.go
   if [ $? -eq 0 ]; then
     echo "OK"
