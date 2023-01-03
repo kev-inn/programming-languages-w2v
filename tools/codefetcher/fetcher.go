@@ -195,7 +195,7 @@ func (f GithubFetcher) FetchCodes(ctx context.Context, language Language, query 
 					return err
 				}
 
-				err = f.storage.SaveCodefile(errCtx, language, codeResult.GetHTMLURL(), code, codeResult.GetSHA())
+				err = f.storage.StoreCodefile(errCtx, language, codeResult.GetHTMLURL(), code, codeResult.GetSHA())
 				if err != nil {
 					return err
 				}

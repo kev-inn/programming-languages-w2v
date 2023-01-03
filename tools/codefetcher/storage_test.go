@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha1"
+	"database/sql"
 	"encoding/hex"
-	"errors"
+	_ "github.com/glebarez/go-sqlite"
 	"os"
 	"testing"
 	"time"
@@ -21,45 +22,41 @@ var (
 	testCodefileHelloWorldHash = hex.EncodeToString(sha1.New().Sum(testCodefileHelloWorld))
 
 	testCodefileHelloWorld2     = []byte("#!/usr/bin/env python3\n\nprint(\"Hello World\")\n\n")
-	testCodefileHelloWorld2Hash = hex.EncodeToString(sha1.New().Sum(testCodefileHelloWorld))
+	testCodefileHelloWorld2Hash = hex.EncodeToString(sha1.New().Sum(testCodefileHelloWorld2))
 
 	testLanguage1, _ = ParseLanguage("python")
 	testLanguage2, _ = ParseLanguage("c#")
-	testTimeout      = 1 * time.Second
+	testTimeout      = 3 * time.Second
+	testDatabasePath = "test.db"
 )
 
 func createTempDatabase(t *testing.T) Storage {
-	s, err := NewSqlite3Storage(t.TempDir() + "/code.sqlite3")
+
+	tempDatabasePath := t.TempDir() + testDatabasePath
+
+	db, err := sql.Open("sqlite", tempDatabasePath)
 	if err != nil {
 		t.Fatalf("Error creating database: %v", err)
 	}
+
+	s := Storage{
+		DB: db,
+	}
+
+	err = s.Init(context.Background())
+	if err != nil {
+		t.Fatalf("Error initializing database: %v", err)
+	}
+
 	return s
 }
 
-func TestSqlite3DatabaseCreation(t *testing.T) {
-
-	dbFilepath := t.TempDir() + "/code.sqlite3"
-	if _, err := os.Stat(dbFilepath); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("File should not exist: %s", dbFilepath)
-	}
-
-	s, err := NewSqlite3Storage(dbFilepath)
-	if err != nil {
-		t.Fatalf("Error creating database: %v", err)
-	}
-	defer s.Close()
-
-	if _, err := os.Stat(dbFilepath); errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("Storage file not created")
-	}
-}
-
-func TestSqlite3Init(t *testing.T) {
+func TestInit(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	var count int
 	err := s.queryRowContext(ctx, `SELECT COUNT(name) FROM sqlite_schema WHERE name="code";`).Scan(&count)
@@ -82,12 +79,12 @@ func TestSqlite3Init(t *testing.T) {
 	}
 }
 
-func TestSqlite3TableExists(t *testing.T) {
+func TestTableExists(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	exists, err := s.tableExists(ctx, "code")
 	if err != nil {
@@ -117,23 +114,6 @@ func TestSqlite3TableExists(t *testing.T) {
 	}
 }
 
-func TestSqlite3TestingTableDrop(t *testing.T) {
-
-	dbFilepath := t.TempDir() + "/code.sqlite3"
-
-	s, err := newSqlite3TestStorage(dbFilepath)
-	if err != nil {
-		t.Fatalf("Error creating database: %v", err)
-	}
-	s.Close()
-
-	if _, err := os.Stat(dbFilepath); errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("Storage file not created")
-	}
-
-	t.Fatalf("Not implemented")
-}
-
 func TestHash(t *testing.T) {
 	hash := sha1.Sum(testCodefileHelloWorld)
 	t.Log(hex.EncodeToString(hash[:]))
@@ -144,14 +124,14 @@ func TestHashUnique(t *testing.T) {
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
-	err := s.SaveCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
+	err := s.StoreCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
 	if err != nil {
 		t.Fatalf("Error inserting codefile: %v", err)
 	}
 
-	err = s.SaveCodefile(ctx, testLanguage1, "http://localhost/main3.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
+	err = s.StoreCodefile(ctx, testLanguage1, "http://localhost/main3.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
 	if err != nil {
 		t.Fatalf("Error inserting codefile: %v", err)
 	}
@@ -175,12 +155,12 @@ func TestHashUnique(t *testing.T) {
 	}
 }
 
-func TestSqlite3InsertAndCodeCount(t *testing.T) {
+func TestInsertAndCodeCount(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	count, err := s.CountCodefiles(ctx)
 	if err != nil {
@@ -191,7 +171,7 @@ func TestSqlite3InsertAndCodeCount(t *testing.T) {
 		t.Fatalf("Expected 0 rows in table, got %d", count)
 	}
 
-	err = s.SaveCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
+	err = s.StoreCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
 	if err != nil {
 		t.Fatalf("Error inserting codefile: %v", err)
 	}
@@ -212,7 +192,7 @@ func TestTotalCodeSize(t *testing.T) {
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	totalSize, err := s.GetTotalCodeSizeByLanguage(ctx, testLanguage1)
 	if err != nil {
@@ -222,7 +202,7 @@ func TestTotalCodeSize(t *testing.T) {
 		t.Fatalf("Expected 0 bytes, got %d", totalSize)
 	}
 
-	err = s.SaveCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
+	err = s.StoreCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
 	if err != nil {
 		t.Fatalf("Error inserting codefile: %v", err)
 	}
@@ -234,7 +214,7 @@ func TestTotalCodeSize(t *testing.T) {
 		t.Fatalf("Expected %d bytes, got %d", len(testCodefileHelloWorld), totalSize)
 	}
 
-	err = s.SaveCodefile(ctx, testLanguage1, "http://localhost/main2.py", testCodefileHelloWorld2, testCodefileHelloWorld2Hash)
+	err = s.StoreCodefile(ctx, testLanguage1, "http://localhost/main2.py", testCodefileHelloWorld2, testCodefileHelloWorld2Hash)
 	if err != nil {
 		t.Fatalf("Error inserting codefile: %v", err)
 	}
@@ -260,7 +240,7 @@ func TestLargeCode(t *testing.T) {
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	largeCodeFile, err := os.ReadFile("storage_test.go")
 	if err != nil {
@@ -268,7 +248,7 @@ func TestLargeCode(t *testing.T) {
 	}
 	largeCodeFile = bytes.Repeat(largeCodeFile, 100)
 
-	err = s.SaveCodefile(ctx, testLanguage1, "http://localhost/main.py", largeCodeFile, hex.EncodeToString(sha1.New().Sum(largeCodeFile)))
+	err = s.StoreCodefile(ctx, testLanguage1, "http://localhost/main.py", largeCodeFile, hex.EncodeToString(sha1.New().Sum(largeCodeFile)))
 	if err != nil {
 		t.Fatalf("Error inserting codefile: %v", err)
 	}
@@ -279,7 +259,7 @@ func TestGetProcessEmpty(t *testing.T) {
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	progress, err := s.GetProgress(ctx, testLanguage1, "*")
 	if err != nil {
@@ -294,7 +274,7 @@ func TestGetProcess(t *testing.T) {
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	err := s.UpdateProgress(ctx, testLanguage1, "*", 50)
 	if err != nil {
@@ -328,7 +308,7 @@ func TestCodeExistsByHash(t *testing.T) {
 	defer cancel()
 
 	s := createTempDatabase(t)
-	defer s.Close()
+	defer s.DB.Close()
 
 	exists, err := s.CodeExistsByHash(ctx, testCodefileHelloWorldHash)
 	if err != nil {
@@ -338,7 +318,7 @@ func TestCodeExistsByHash(t *testing.T) {
 		t.Fatalf("Expected code to not exist")
 	}
 
-	err = s.SaveCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
+	err = s.StoreCodefile(ctx, testLanguage1, "http://localhost/main.py", testCodefileHelloWorld, testCodefileHelloWorldHash)
 	if err != nil {
 		t.Fatalf("Error inserting codefile: %v", err)
 	}

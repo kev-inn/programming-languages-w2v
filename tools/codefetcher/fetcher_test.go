@@ -14,7 +14,7 @@ var (
 
 func init() {
 	flag.Parse()
-	fetcher = NewGithubFetcher(*githubUserArg, *githubTokenArg, nil, 0)
+	fetcher = NewGithubFetcher(*githubUserArg, *githubTokenArg, Storage{}, 0)
 }
 
 func TestDownloadError(t *testing.T) {

@@ -3,6 +3,7 @@ package main
 import (
 	"codefetcher/codefetcher"
 	"context"
+	"database/sql"
 	goflag "flag"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -15,7 +16,7 @@ import (
 var (
 	helpArg           *bool   = flag.BoolP("help", "h", false, "Show help/usage")
 	logLevelArg       *string = flag.String("log-level", log.DebugLevel.String(), "Log level (debug, info, warn, error, fatal, panic)")
-	databaseArg       *string = flag.StringP("database", "d", "codes.sqlite3", "SQLite3 database path")
+	databaseArg       *string = flag.StringP("database", "d", "codes.db", "SQLite database path")
 	githubUserArg     *string = flag.String("github-user", "", "Github username")
 	githubTokenArg    *string = flag.String("github-token", "", "Github access token")
 	queryArg          *string = flag.StringP("query", "q", "*", "Extra search terms for query")
@@ -98,17 +99,16 @@ func main() {
 		<-signalChan // second signal, hard exit
 	}()
 
-	s, err := codefetcher.NewSqlite3Storage(*databaseArg)
+	db, err := sql.Open("sqlite", *databaseArg)
 	if err != nil {
-		log.Errorf("Failed to open sqlite database: \"%s\"", err.Error())
-		os.Exit(1)
+		log.Errorf("Failed to open database: \"%s\"", err.Error())
 	}
-	defer s.Close()
+	defer db.Close()
 
-	log.Infof("Connected to database %s", s.Url())
+	log.Infof("Connected to database %s", *databaseArg)
 	log.Infof("Fetching code from github.com for language %s with query \"%s\"", language.String(), *queryArg)
 
-	fetcher := codefetcher.NewGithubFetcher(*githubUserArg, *githubTokenArg, s, requestTimeout)
+	fetcher := codefetcher.NewGithubFetcher(*githubUserArg, *githubTokenArg, codefetcher.Storage{DB: db}, requestTimeout)
 	err = fetcher.FetchCodes(ctx, language, *queryArg, *maxCodeSizeArg)
 	if err != nil {
 		log.Fatalf("Failed to fetch codes: %s", err.Error())
