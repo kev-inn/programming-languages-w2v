@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Dict, List, Optional, Tuple
 from multiprocessing import Pool
 import platform
@@ -8,15 +9,16 @@ import numpy as np
 import swifter
 from swifter import set_defaults
 import sqlite3
-from antlr4 import *
 from py4j.java_gateway import JavaGateway, launch_gateway, GatewayParameters
 
 from .parsers.CPP14Lexer import CPP14Lexer
 from .parsers.CPP14ParserListener import CPP14ParserListener
 from .parsers.CPP14Parser import CPP14Parser
-from .tokenizers import *
 
 set_defaults(allow_dask_on_strings=True, progress_bar=True)
+
+STRING_LITERAL_TOKEN = "STRING_LITERAL"
+INT_LITERAL_TOKEN = "INT_LITERAL"
 
 
 def _generic_regex_tokenization(code: pd.Series):
@@ -56,17 +58,21 @@ gateways = [
 ]
 
 
-def code_tokenize_par(t):
+def code_tokenize_par(t, function_name):
     i, code = t
-    res = gateways[i % pool_size].jvm.CppTokenizer.tokenize(code)
+    print(dir(gateways[i % pool_size].jvm.Tokenizer))
+    res = getattr(gateways[i % pool_size].jvm.Tokenizer, function_name)(code)
     return list(res)
 
 
-def _cpp_tokenization(code: pd.Series):
+def _antlr_tokenization(code: pd.Series, function_name: str):
     with Pool(pool_size) as p:
         tokenized_code = pd.Series(
             tqdm(
-                p.imap(code_tokenize_par, enumerate(code)),
+                p.imap(
+                    partial(code_tokenize_par, function_name=function_name),
+                    enumerate(code),
+                ),
                 total=len(code),
                 smoothing=0.01,
             ),
@@ -76,31 +82,57 @@ def _cpp_tokenization(code: pd.Series):
     return tokenized_code
 
 
-SPECIALIZED_TOKENIZATION = {"C++": _cpp_tokenization}
+def _cpp_tokenization(code: pd.Series):
+    return _antlr_tokenization(code, "tokenizeCpp")
 
 
-def read_dataset(db_file_path: str, programming_language: Optional[str] = None):
+def _csharp_tokenization(code: pd.Series):
+    return _antlr_tokenization(code, "tokenizeCsharp")
+
+
+SPECIALIZED_TOKENIZATION = {"C++": _cpp_tokenization, "C#": _csharp_tokenization}
+
+
+def read_snippets_dataset(
+    db_file_path: str, programming_language: Optional[str] = None
+) -> pd.DataFrame:
     conn = sqlite3.connect(db_file_path)
     cur = conn.cursor()
 
     # check if database contains table "progress"
-    foo = cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='progress'")
+    foo = cur.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='progress'"
+    )
     # "our" database
     if len(list(foo)) == 0:
         if programming_language is None:
             snippets = cur.execute("SELECT language, snippet FROM snippets")
         else:
-            snippets = cur.execute(f"SELECT language, snippet FROM snippets WHERE language='{programming_language}'")
+            snippets = cur.execute(
+                f"SELECT language, snippet FROM snippets WHERE language='{programming_language}'"
+            )
     else:
         if programming_language is None:
             snippets = cur.execute("SELECT language, content FROM code")
         else:
-            snippets = cur.execute(f"SELECT language, content FROM code WHERE language='{programming_language}'")
+            snippets = cur.execute(
+                f"SELECT language, content FROM code WHERE language='{programming_language}'"
+            )
 
     return pd.DataFrame(snippets, columns=["language", "code"])
 
 
+def read_lang_dataset(db_file_path: str) -> pd.DataFrame:
+    conn = sqlite3.connect(db_file_path)
+    cur = conn.cursor()
+    data = cur.execute("SELECT language, content FROM code")
+    data = pd.DataFrame(data, columns=["language", "code"])
+    data.code = data.code.str.decode("utf-8", errors="replace")
+    return data
+
+
 def tokenize_dataset(dataset: pd.DataFrame):
+    dataset = dataset.copy()
     for language in dataset.language.unique():
         code_selection = dataset.code[dataset.language == language]
         if language in SPECIALIZED_TOKENIZATION:
