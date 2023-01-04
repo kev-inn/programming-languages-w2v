@@ -79,22 +79,7 @@ def _cpp_tokenization(code: pd.Series):
 SPECIALIZED_TOKENIZATION = {"C++": _cpp_tokenization}
 
 
-def read_dataset(
-    db_file_path: str, programming_language: Optional[str] = None
-) -> pd.DataFrame:
-    conn = sqlite3.connect(db_file_path)
-    cur = conn.cursor()
-
-    if programming_language is None:
-        snippets = cur.execute("SELECT language, snippet FROM snippets")
-    else:
-        snippets = cur.execute(
-            f"SELECT language, snippet FROM snippets WHERE language='{programming_language}'"
-        )
-    return pd.DataFrame(snippets, columns=["language", "code"])
-
-
-def load(db_file_path: str, programming_language: Optional[str] = None):
+def read_dataset(db_file_path: str, programming_language: Optional[str] = None):
     conn = sqlite3.connect(db_file_path)
     cur = conn.cursor()
 
