@@ -94,6 +94,27 @@ def read_dataset(
     return pd.DataFrame(snippets, columns=["language", "code"])
 
 
+def load(db_file_path: str, programming_language: Optional[str] = None):
+    conn = sqlite3.connect(db_file_path)
+    cur = conn.cursor()
+
+    # check if database contains table "progress"
+    foo = cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='progress'")
+    # "our" database
+    if len(list(foo)) == 0:
+        if programming_language is None:
+            snippets = cur.execute("SELECT language, snippet FROM snippets")
+        else:
+            snippets = cur.execute(f"SELECT language, snippet FROM snippets WHERE language='{programming_language}'")
+    else:
+        if programming_language is None:
+            snippets = cur.execute("SELECT language, content FROM code")
+        else:
+            snippets = cur.execute(f"SELECT language, content FROM code WHERE language='{programming_language}'")
+
+    return pd.DataFrame(snippets, columns=["language", "code"])
+
+
 def tokenize_dataset(dataset: pd.DataFrame):
     for language in dataset.language.unique():
         code_selection = dataset.code[dataset.language == language]
