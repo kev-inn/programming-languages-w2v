@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "programming-languages-w2v"
+version = "0.1.0"
+description = ""
+authors = ["phil535 <phil535@programming-languages-w2v.com>"]
+readme = "README.md"
+packages = [{include = "programming_languages_w2v"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tqdm = "^4.64.1"
+numpy = "^1.24.1"
+swifter = "^1.3.4"
+antlr4-python3-runtime = "^4.11.1"
+py4j = "^0.10.9.7"
+torch = "^1.13.1"
+jupyter = "^1.0.0"
+seaborn = "^0.12.2"
+gensim = "^4.3.0"
+scikit-learn = "^1.2.0"
+antlr4-tools = "^0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
