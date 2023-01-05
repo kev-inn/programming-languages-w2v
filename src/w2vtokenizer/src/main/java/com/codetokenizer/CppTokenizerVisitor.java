@@ -27,20 +27,6 @@ public class CppTokenizerVisitor extends CPP14ParserBaseVisitor<List<String>> {
     }
 
     @Override
-    protected List<String> defaultResult() {
-        return List.of();
-    }
-
-    @Override
-    protected List<String> aggregateResult(List<String> aggregate, List<String> nextResult) {
-        return Stream.concat(aggregate.stream(), nextResult.stream()).collect(Collectors.toList());
-    }
-
-    private void addVariableToScope(String variableName) {
-        replace_identifiers.get(replace_identifiers.size() - 1).add(variableName);
-    }
-
-    @Override
     public List<String> visitTerminal(TerminalNode node) {
         String replacement = literal_token_replacement.get(node.getSymbol().getType());
         if (replacement != null) {
@@ -79,5 +65,19 @@ public class CppTokenizerVisitor extends CPP14ParserBaseVisitor<List<String>> {
         if (is_variable_declaration)
             addVariableToScope(ctx.getText());
         return visitChildren(ctx);
+    }
+
+    @Override
+    protected List<String> defaultResult() {
+        return List.of();
+    }
+
+    @Override
+    protected List<String> aggregateResult(List<String> aggregate, List<String> nextResult) {
+        return Stream.concat(aggregate.stream(), nextResult.stream()).collect(Collectors.toList());
+    }
+
+    private void addVariableToScope(String variableName) {
+        replace_identifiers.get(replace_identifiers.size() - 1).add(variableName);
     }
 }

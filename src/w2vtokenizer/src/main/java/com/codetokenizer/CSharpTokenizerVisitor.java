@@ -49,32 +49,10 @@ public class CSharpTokenizerVisitor extends CSharpParserBaseVisitor<List<String>
     }
 
     @Override
-    protected List<String> defaultResult() {
-        return List.of();
-    }
-
-    private boolean isVariableToReplace(String identifier) {
-        for (var scope : replace_identifiers) {
-            if (scope.contains(identifier))
-                return true;
-        }
-        return false;
-    }
-
-    @Override
     public List<String> visitIdentifier(CSharpParser.IdentifierContext ctx) {
         if (isVariableToReplace(ctx.getText()))
             return List.of(Tokenizer.VARIABLE_TOKEN);
         return List.of(ctx.getText());
-    }
-
-    @Override
-    protected List<String> aggregateResult(List<String> aggregate, List<String> nextResult) {
-        return Stream.concat(aggregate.stream(), nextResult.stream()).collect(Collectors.toList());
-    }
-
-    private void addVariableToScope(String variableName) {
-        replace_identifiers.get(replace_identifiers.size() - 1).add(variableName);
     }
 
     @Override
@@ -111,6 +89,28 @@ public class CSharpTokenizerVisitor extends CSharpParserBaseVisitor<List<String>
     public List<String> visitArg_declaration(CSharpParser.Arg_declarationContext ctx) {
         addVariableToScope(ctx.identifier().getText());
         return visitChildren(ctx);
+    }
+
+    @Override
+    protected List<String> defaultResult() {
+        return List.of();
+    }
+
+    @Override
+    protected List<String> aggregateResult(List<String> aggregate, List<String> nextResult) {
+        return Stream.concat(aggregate.stream(), nextResult.stream()).collect(Collectors.toList());
+    }
+
+    private boolean isVariableToReplace(String identifier) {
+        for (var scope : replace_identifiers) {
+            if (scope.contains(identifier))
+                return true;
+        }
+        return false;
+    }
+
+    private void addVariableToScope(String variableName) {
+        replace_identifiers.get(replace_identifiers.size() - 1).add(variableName);
     }
 
 }

@@ -46,6 +46,14 @@ public class Tokenizer {
         return tokenize(lexer, parser, visitor, parser::sourceFile);
     }
 
+    public static List<String> tokenizePython3(String code) {
+        var lexer = new Python3Lexer(CharStreams.fromString(code));
+        var parser = new Python3Parser(new CommonTokenStream(lexer));
+        var visitor = new Python3TokenizerVisitor();
+
+        return tokenize(lexer, parser, visitor, parser::file_input);
+    }
+
     private static List<String> tokenize(Lexer lexer, Parser parser,
             AbstractParseTreeVisitor<List<String>> visitor, Supplier<ParseTree> startRule) {
         lexer.removeErrorListeners();
@@ -66,10 +74,11 @@ public class Tokenizer {
             parser.setErrorHandler(new DefaultErrorStrategy());
             parser.getInterpreter().setPredictionMode(PredictionMode.LL);
 
-            tree = startRule.get();
-            return visitor.visit(tree);
+
         } catch (Exception e) {
         }
-        return List.of();
+            tree = startRule.get();
+            return visitor.visit(tree);
+        //return List.of();
     }
 }

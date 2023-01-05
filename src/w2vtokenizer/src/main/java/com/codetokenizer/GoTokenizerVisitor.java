@@ -29,14 +29,6 @@ public class GoTokenizerVisitor extends GoParserBaseVisitor<List<String>> {
         literal_token_replacement.put(GoLexer.FLOAT_LIT, Tokenizer.FLOAT_LITERAL_TOKEN);
     }
 
-    private boolean isVariableToReplace(String identifier) {
-        for (var scope : replace_identifiers) {
-            if (scope.contains(identifier))
-                return true;
-        }
-        return false;
-    }
-
     @Override
     public List<String> visitTerminal(TerminalNode node) {
         String replacement = literal_token_replacement.get(node.getSymbol().getType());
@@ -109,5 +101,13 @@ public class GoTokenizerVisitor extends GoParserBaseVisitor<List<String>> {
     @Override
     protected List<String> defaultResult() {
         return List.of();
+    }
+
+    private boolean isVariableToReplace(String identifier) {
+        for (var scope : replace_identifiers) {
+            if (scope.contains(identifier))
+                return true;
+        }
+        return false;
     }
 }
