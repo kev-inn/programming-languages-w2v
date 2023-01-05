@@ -6,8 +6,7 @@ grammars/.antlr/**
 **.pyc
 **.zip
 env/**
-src/java_parser/build/**
-
+src/w2vtokenizer/target/**
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm+all

@@ -41,11 +41,9 @@ def _generic_regex_tokenization(code: pd.Series):
 
 pool_size = 8
 # "create_parser.(sh|bat)" script will create this
-jarpath = "./src/java_parser/build/tokenizer.jar"
+jarpath = "./src/w2vtokenizer/target/w2vtokenizer-0.0.1-SNAPSHOT.jar"
 classpath_seperator = ";" if platform.system() == "Windows" else ":"
-classpath = classpath_seperator.join(
-    ["./src/java_parser/antlr-runtime-4.11.1.jar", jarpath]
-)
+classpath = classpath_seperator.join([jarpath])
 
 gateway_port = launch_gateway(classpath=classpath, die_on_exit=True)
 gateways = [
@@ -56,8 +54,9 @@ gateways = [
 
 def code_tokenize_par(t, function_name):
     i, code = t
-    print(dir(gateways[i % pool_size].jvm.Tokenizer))
-    res = getattr(gateways[i % pool_size].jvm.Tokenizer, function_name)(code)
+    res = getattr(
+        gateways[i % pool_size].jvm.com.codetokenizer.Tokenizer, function_name
+    )(code)
     return list(res)
 
 
