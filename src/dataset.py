@@ -41,7 +41,9 @@ def _generic_regex_tokenization(code: pd.Series):
 
 pool_size = 8
 # "create_parser.(sh|bat)" script will create this
-jarpath = "./src/w2vtokenizer/target/w2vtokenizer-0.0.1-SNAPSHOT.jar"
+jarpath = (
+    "./src/w2vtokenizer/target/w2vtokenizer-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
+)
 classpath_seperator = ";" if platform.system() == "Windows" else ":"
 classpath = classpath_seperator.join([jarpath])
 

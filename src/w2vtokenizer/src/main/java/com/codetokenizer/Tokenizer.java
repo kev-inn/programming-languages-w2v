@@ -23,19 +23,27 @@ public class Tokenizer {
     }
 
     public static List<String> tokenizeCpp(String code) {
-        CPP14Lexer lexer = new CPP14Lexer(CharStreams.fromString(code));
-        CPP14Parser parser = new CPP14Parser(new CommonTokenStream(lexer));
-        CppTokenizerVisitor visitor = new CppTokenizerVisitor();
+        var lexer = new CPP14Lexer(CharStreams.fromString(code));
+        var parser = new CPP14Parser(new CommonTokenStream(lexer));
+        var visitor = new CppTokenizerVisitor();
 
         return tokenize(lexer, parser, visitor, parser::translationUnit);
     }
 
     public static List<String> tokenizeCsharp(String code) {
-        CSharpLexer lexer = new CSharpLexer(CharStreams.fromString(code));
-        CSharpParser parser = new CSharpParser(new CommonTokenStream(lexer));
-        CSharpTokenizerVisitor visitor = new CSharpTokenizerVisitor();
+        var lexer = new CSharpLexer(CharStreams.fromString(code));
+        var parser = new CSharpParser(new CommonTokenStream(lexer));
+        var visitor = new CSharpTokenizerVisitor();
 
         return tokenize(lexer, parser, visitor, parser::compilation_unit);
+    }
+
+    public static List<String> tokenizeGo(String code) {
+        var lexer = new GoLexer(CharStreams.fromString(code));
+        var parser = new GoParser(new CommonTokenStream(lexer));
+        var visitor = new GoTokenizerVisitor();
+
+        return tokenize(lexer, parser, visitor, parser::sourceFile);
     }
 
     private static List<String> tokenize(Lexer lexer, Parser parser,

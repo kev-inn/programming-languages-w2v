@@ -1,1 +1,1 @@
-mvn clean compile assembly:single -f ".\src\w2vtokenizer\pom.xml" || echo -e Is a java instance still running? Reset all notebooks!
+mvn clean compile assembly:single -f ".\src\w2vtokenizer\pom.xml" || echo Is a java instance still running? Reset all notebooks!

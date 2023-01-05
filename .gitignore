@@ -1,12 +1,9 @@
 snippets-dev/**
-grammars/**.cpp
-grammars/**.h
-grammars/**.tokens
-grammars/.antlr/**
 **.pyc
 **.zip
 env/**
 src/w2vtokenizer/target/**
+src/w2vtokenizer/src/main/antlr4/com/codetokenizer/.antlr/**
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm+all
