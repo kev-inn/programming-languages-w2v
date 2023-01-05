@@ -1,0 +1,8 @@
+{
+    "python.formatting.provider": "black",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "src/java_parser/antlr-runtime-4.11.1.jar",
+        "env/share/py4j/py4j0.10.9.7.jar"
+    ]
+}
