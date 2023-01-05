@@ -79,15 +79,12 @@ def _antlr_tokenization(code: pd.Series, function_name: str):
     return tokenized_code
 
 
-def _cpp_tokenization(code: pd.Series):
-    return _antlr_tokenization(code, "tokenizeCpp")
-
-
-def _csharp_tokenization(code: pd.Series):
-    return _antlr_tokenization(code, "tokenizeCsharp")
-
-
-SPECIALIZED_TOKENIZATION = {"C++": _cpp_tokenization, "C#": _csharp_tokenization}
+SPECIALIZED_TOKENIZATION = {
+    "C++": partial(_antlr_tokenization, function_name="tokenizeCpp"),
+    "C#": partial(_antlr_tokenization, function_name="tokenizeCsharp"),
+    "Go": partial(_antlr_tokenization, function_name="tokenizeGo"),
+    "Python": partial(_antlr_tokenization, function_name="tokenizePython3"),
+}
 
 
 def read_snippets_dataset(
