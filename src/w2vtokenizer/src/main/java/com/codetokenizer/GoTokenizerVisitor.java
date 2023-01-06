@@ -62,8 +62,10 @@ public class GoTokenizerVisitor extends GoParserBaseVisitor<List<String>> {
 
     @Override
     public List<String> visitFieldDecl(FieldDeclContext ctx) {
-        var names = visitIdentifierList(ctx.identifierList());
-        replace_identifiers.get(replace_identifiers.size() - 1).addAll(names);
+        if (ctx.identifierList() != null) {
+            var names = visitIdentifierList(ctx.identifierList());
+            replace_identifiers.get(replace_identifiers.size() - 1).addAll(names);
+        }
         return visitChildren(ctx);
     }
 
