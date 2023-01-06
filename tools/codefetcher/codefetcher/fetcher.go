@@ -92,6 +92,24 @@ func secondsToTime(seconds string) string {
 	return time.Format("2006-01-02 15:04:05")
 }
 
+func (f GithubFetcher) totalCodeSizeLimitReached(ctx context.Context, language Language, limit int) (bool, error) {
+
+	if limit <= 0 {
+		return false, nil
+	}
+
+	totalSizeBytes, err := f.storage.GetTotalCodeSizeByLanguage(ctx, language)
+	if err != nil {
+		return false, err
+	}
+
+	if totalSizeBytes >= limit {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (f GithubFetcher) FetchCodes(ctx context.Context, language Language, query string, maxTotalSizeBytes int) error {
 
 	if len(query) == 0 {
@@ -156,12 +174,11 @@ func (f GithubFetcher) FetchCodes(ctx context.Context, language Language, query 
 		}
 
 		// stop fetching code if total size limit is reached
-		totalSizeBytes, err := f.storage.GetTotalCodeSizeByLanguage(ctx, language)
+		totalSizeLimitReached, err := f.totalCodeSizeLimitReached(ctx, language, maxTotalSizeBytes)
 		if err != nil {
 			return err
-		}
-		if totalSizeBytes > maxTotalSizeBytes {
-			log.Infof("Total code size limit for language %s reached: %d bytes", language.String(), totalSizeBytes)
+		} else if totalSizeLimitReached {
+			log.Infof("Total code size limit for language %s reached: %d bytes", language.String(), maxTotalSizeBytes)
 			return nil
 		}
 

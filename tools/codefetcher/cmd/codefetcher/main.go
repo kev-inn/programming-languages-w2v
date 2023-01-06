@@ -21,7 +21,7 @@ var (
 	githubTokenArg    *string = flag.String("github-token", "", "Github access token")
 	queryArg          *string = flag.StringP("query", "q", "", "Extra search terms for query")
 	languageArg       *string = flag.StringP("language", "l", "", fmt.Sprintf("Programming language (%s)", codefetcher.AvailableLanguages))
-	maxCodeSizeArg    *int    = flag.Int("max-code-size", 1*1024, "Maximum total code size per language in bytes (default: 1KB)")
+	maxCodeSizeArg    *int    = flag.Int("max-code-size", 0, "Maximum total code size per language in bytes (0 = unlimited)")
 	requestTimeoutArg *int    = flag.IntP("timeout", "t", 2000, "Timeout between requests in milliseconds")
 
 	language       codefetcher.Language
