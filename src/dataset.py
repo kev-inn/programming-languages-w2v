@@ -1,3 +1,4 @@
+import os
 from functools import partial
 from typing import Dict, List, Optional, Tuple
 from multiprocessing import Pool, current_process
@@ -35,7 +36,11 @@ def _generic_regex_tokenization(code: pd.Series):
     )
 
 
-pool_size = 7
+if __name__ == "__main__":
+    from pathlib import Path
+    os.chdir(Path('..').absolute())
+
+pool_size = 8
 # "create_parser.(sh|bat)" script will create this
 jarpath = (
     "./src/w2vtokenizer/target/w2vtokenizer-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
@@ -146,3 +151,12 @@ def get_vocab_mapping(
     int2word = words
     word2int = {w: i for i, w in enumerate(words)}
     return word2int, int2word
+
+
+def main():
+    ds = read_lang_dataset("data/codes_go.db")
+    tokenize_dataset(ds)
+
+
+if __name__ == "__main__":
+    main()
