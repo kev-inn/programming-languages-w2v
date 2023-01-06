@@ -1,17 +1,13 @@
 from functools import partial
 from typing import Dict, List, Optional, Tuple
-from multiprocessing import Pool
+from multiprocessing import Pool, current_process
 import platform
 
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
-import swifter
-from swifter import set_defaults
 import sqlite3
 from py4j.java_gateway import JavaGateway, launch_gateway, GatewayParameters
-
-set_defaults(allow_dask_on_strings=True, progress_bar=True)
 
 STRING_LITERAL_TOKEN = "STRING_LITERAL"
 INT_LITERAL_TOKEN = "INT_LITERAL"
@@ -39,7 +35,7 @@ def _generic_regex_tokenization(code: pd.Series):
     )
 
 
-pool_size = 8
+pool_size = 7
 # "create_parser.(sh|bat)" script will create this
 jarpath = (
     "./src/w2vtokenizer/target/w2vtokenizer-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
@@ -71,7 +67,7 @@ def _antlr_tokenization(code: pd.Series, function_name: str):
                     enumerate(code),
                 ),
                 total=len(code),
-                smoothing=0.01,
+                smoothing=0.0001,
             ),
             index=code.index,
             dtype=object,

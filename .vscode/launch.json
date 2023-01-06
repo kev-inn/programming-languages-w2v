@@ -8,9 +8,9 @@
             "type": "antlr-debug",
             "request": "launch",
             "input": "input.txt",
-            "grammar": "grammars/CPP14Parser.g4",
+            "grammar": "src\\w2vtokenizer\\src\\main\\antlr4\\com\\codetokenizer\\Python3Parser.g4",
             //"actionFile": "grammars/exampleActions.js",
-            "startRule": "translationUnit",
+            "startRule": "file_input",
             "printParseTree": true,
             "visualParseTree": true
         }
