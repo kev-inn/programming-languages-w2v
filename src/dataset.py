@@ -122,7 +122,6 @@ def read_lang_dataset(db_file_path: str) -> pd.DataFrame:
     cur = conn.cursor()
     data = cur.execute("SELECT language, content FROM code")
     data = pd.DataFrame(data, columns=["language", "code"])
-    data.code = data.code.str.decode("utf-8", errors="replace")
     return data
 
 
