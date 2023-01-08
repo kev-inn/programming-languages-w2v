@@ -119,9 +119,12 @@ def read_lang_dataset(
     return pd.DataFrame(snippets, columns=["language", "code"])
 
 
-def tokenize_dataset(dataset: pd.DataFrame):
+def tokenize_dataset(dataset: pd.DataFrame, ignore_langs: List[str] = []):
     dataset = dataset.copy()
     for language in dataset.language.unique():
+        if language and language in ignore_langs:
+            continue
+
         log.info(f"Tokenizing {language} dataset")
         code_selection = dataset.code[dataset.language == language]
         if language in SPECIALIZED_TOKENIZATION:
@@ -151,7 +154,7 @@ def main():
     log.setLevel(logging.DEBUG)
     log.addHandler(logging.StreamHandler())
     ds = read_lang_dataset("data/dataset_github_codes.db")
-    tokenize_dataset(ds)
+    tokenize_dataset(ds, ['C#'])
 
 
 if __name__ == "__main__":
