@@ -1,4 +1,5 @@
 package com.codetokenizer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +70,9 @@ public class CSharpTokenizerVisitor extends CSharpParserBaseVisitor<List<String>
 
     @Override
     public List<String> visitMember_declarator(CSharpParser.Member_declaratorContext ctx) {
-        addVariableToScope(ctx.identifier().getText());
+        if (ctx.identifier() != null) {
+            addVariableToScope(ctx.identifier().getText());
+        }
         return visitChildren(ctx);
     }
 
