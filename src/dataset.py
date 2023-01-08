@@ -154,7 +154,7 @@ def main():
     log.setLevel(logging.DEBUG)
     log.addHandler(logging.StreamHandler())
     ds = read_lang_dataset("data/dataset_github_codes.db")
-    tokenize_dataset(ds, ['C#'])
+    tokenize_dataset(ds)
 
 
 if __name__ == "__main__":
