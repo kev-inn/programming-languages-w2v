@@ -4,6 +4,8 @@ snippets-dev/**
 env/**
 src/w2vtokenizer/target/**
 src/w2vtokenizer/src/main/antlr4/com/codetokenizer/.antlr/**
+**.pkl
+**.gensim
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm+all
