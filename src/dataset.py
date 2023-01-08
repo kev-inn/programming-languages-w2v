@@ -88,7 +88,7 @@ SPECIALIZED_TOKENIZATION = {
 }
 
 
-def read_snippets_dataset(
+def read_lang_dataset(
     db_file_path: str, programming_language: Optional[str] = None
 ) -> pd.DataFrame:
     conn = sqlite3.connect(db_file_path)
@@ -115,14 +115,6 @@ def read_snippets_dataset(
             )
 
     return pd.DataFrame(snippets, columns=["language", "code"])
-
-
-def read_lang_dataset(db_file_path: str) -> pd.DataFrame:
-    conn = sqlite3.connect(db_file_path)
-    cur = conn.cursor()
-    data = cur.execute("SELECT language, content FROM code")
-    data = pd.DataFrame(data, columns=["language", "code"])
-    return data
 
 
 def tokenize_dataset(dataset: pd.DataFrame):
@@ -153,7 +145,7 @@ def get_vocab_mapping(
 
 
 def main():
-    ds = read_lang_dataset("data/codes_go.db")
+    ds = read_lang_dataset("data/codes.db")
     tokenize_dataset(ds)
 
 
