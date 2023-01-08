@@ -13,6 +13,8 @@ from py4j.java_gateway import JavaGateway, launch_gateway, GatewayParameters
 STRING_LITERAL_TOKEN = "STRING_LITERAL"
 INT_LITERAL_TOKEN = "INT_LITERAL"
 
+import logging
+log = logging.getLogger('dataset')
 
 def _generic_regex_tokenization(code: pd.Series):
     # TODO: maybe consider \t seperately for python and other such languages
@@ -120,6 +122,7 @@ def read_lang_dataset(
 def tokenize_dataset(dataset: pd.DataFrame):
     dataset = dataset.copy()
     for language in dataset.language.unique():
+        log.info(f"Tokenizing {language} dataset")
         code_selection = dataset.code[dataset.language == language]
         if language in SPECIALIZED_TOKENIZATION:
             dataset.code[dataset.language == language] = SPECIALIZED_TOKENIZATION[
@@ -145,7 +148,9 @@ def get_vocab_mapping(
 
 
 def main():
-    ds = read_lang_dataset("data/codes.db")
+    log.setLevel(logging.DEBUG)
+    log.addHandler(logging.StreamHandler())
+    ds = read_lang_dataset("data/dataset_github_codes.db")
     tokenize_dataset(ds)
 
 
