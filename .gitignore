@@ -6,6 +6,9 @@ src/w2vtokenizer/target/**
 src/w2vtokenizer/src/main/antlr4/com/codetokenizer/.antlr/**
 **.pkl
 **.gensim
+**.db
+**.sqlite
+**.sqlite3
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm+all
