@@ -138,6 +138,11 @@ def tokenize_dataset(dataset: pd.DataFrame, ignore_langs: List[str] = []):
     return dataset
 
 
+def tokenize_document(document: str, language: str) -> List[str]:
+    tokenized = tokenize_dataset(pd.DataFrame(data={'language': [language], 'code': [document]}))
+    return tokenized.code[0]
+
+
 def get_vocab_mapping(
     whole_tokenized_dataset: pd.DataFrame,
 ) -> Tuple[Dict[str, int], List[str]]:
@@ -155,6 +160,8 @@ def main():
     log.addHandler(logging.StreamHandler())
     ds = read_lang_dataset("data/dataset_github_codes.db")
     tokenize_dataset(ds)
+
+    print(tokenize_document("print('hello world')", "Python"))
 
 
 if __name__ == "__main__":
