@@ -52,8 +52,12 @@ Used queries for datafetching:
 - Three languages (C++, GO, C#) are a cluster (strongly typed)
 - Python is more on it's own (loosely typed)
 - Vocabulary, Object oriented
-- Getting a good, large dataset is a lot of work
-- Average over all programming languages
+- class seperatee learned from other langs
+- catch c# -> try except
+- syntax unabhängig -> try exept beieinandergo ; python \n, parser
+- better result with larger datasets
+- mehr code mit besserer bedeutung; C++ try catch with c# try catch
+- average over all languages, c++-Go, C# etwas darüber, python wo ganz anders
 
 
 ## 4. Conclusion (Manu):
