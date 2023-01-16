@@ -13,7 +13,9 @@
   - How would you compare programming languages in a more meaningful way? (Other than a bigger dataset)
   - How is copilot designed? Why is it better than what we did?
 - Other forms of analysis? 
+  - Doc2Vec to guess what the code file is about (domain, application, query)
 - Are there other things we can infer from textual/context similarities?
+
 
 ## 1. Introduction (Tobi):
 - NERD origin story
@@ -29,7 +31,7 @@
 - How we did it
 - Unsupervised w2v is good for this
 - Snippets-dev
-  - Variable names are hard to solve
+  - Variable names are hard to get rid of
   - Solve this by using ANTLR4 (Grammar, Lexer, Parser)
 - New dataset because ANTLR4 doesn't really work with small snippets
   - Goal was to get 2k files per language from GitHub (secondary rate limit der HS)
@@ -44,6 +46,7 @@ Used queries for datafetching:
 - C#: automation, dotnet, web, game, template
 - Python: automation, tool, auto, web
 - C++: cache, example, class, embedded, posix, wrapper, client, tcp, database, automation, framework
+
 
 ## 3. Results & Analysis (Phil):
 - Three languages (C++, GO, C#) are a cluster (strongly typed)
